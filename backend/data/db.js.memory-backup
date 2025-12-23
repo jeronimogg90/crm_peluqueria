@@ -1,0 +1,378 @@
+// Base de datos en memoria (simulada)
+// En producción, podrías usar MongoDB, PostgreSQL, etc.
+
+// Horarios disponibles por defecto (lunes a sábado, 9:00 - 19:00)
+const generateDefaultSlots = () => {
+  const slots = [];
+  const days = ['2025-12-22', '2025-12-23', '2025-12-24', '2025-12-26', '2025-12-27', '2025-12-29', '2025-12-30'];
+  const times = ['09:00', '10:00', '11:00', '12:00', '13:00', '16:00', '17:00', '18:00', '19:00'];
+  
+  days.forEach(day => {
+    times.forEach(time => {
+      slots.push({
+        id: `${day}-${time}`,
+        date: day,
+        time: time,
+        available: true
+      });
+    });
+  });
+  
+  return slots;
+};
+
+let slots = generateDefaultSlots();
+
+// Servicios disponibles con precios
+let services = [
+  {
+    id: 1,
+    name: 'Corte de Pelo Mujer',
+    category: 'Peluquería',
+    price: 25,
+    duration: 45,
+    description: 'Corte personalizado con lavado y secado incluido',
+    active: true
+  },
+  {
+    id: 2,
+    name: 'Corte de Pelo Hombre',
+    category: 'Peluquería',
+    price: 15,
+    duration: 30,
+    description: 'Corte de caballero con acabado profesional',
+    active: true
+  },
+  {
+    id: 3,
+    name: 'Tinte Completo',
+    category: 'Peluquería',
+    price: 45,
+    duration: 90,
+    description: 'Coloración completa con productos de calidad premium',
+    active: true
+  },
+  {
+    id: 4,
+    name: 'Mechas/Balayage',
+    category: 'Peluquería',
+    price: 65,
+    duration: 120,
+    description: 'Técnica de mechas o balayage para un look natural',
+    active: true
+  },
+  {
+    id: 5,
+    name: 'Peinado Especial',
+    category: 'Peluquería',
+    price: 35,
+    duration: 60,
+    description: 'Peinado para eventos, bodas o celebraciones',
+    active: true
+  },
+  {
+    id: 6,
+    name: 'Tratamiento Capilar',
+    category: 'Peluquería',
+    price: 30,
+    duration: 45,
+    description: 'Tratamiento nutritivo e hidratante para el cabello',
+    active: true
+  },
+  {
+    id: 7,
+    name: 'Manicura',
+    category: 'Uñas',
+    price: 18,
+    duration: 45,
+    description: 'Manicura completa con esmaltado tradicional',
+    active: true
+  },
+  {
+    id: 8,
+    name: 'Pedicura',
+    category: 'Uñas',
+    price: 25,
+    duration: 60,
+    description: 'Pedicura completa con exfoliación y masaje',
+    active: true
+  },
+  {
+    id: 9,
+    name: 'Uñas Semipermanentes',
+    category: 'Uñas',
+    price: 28,
+    duration: 60,
+    description: 'Esmaltado semipermanente que dura hasta 3 semanas',
+    active: true
+  },
+  {
+    id: 10,
+    name: 'Uñas Acrílicas',
+    category: 'Uñas',
+    price: 40,
+    duration: 90,
+    description: 'Extensión de uñas con acrílico y diseño personalizado',
+    active: true
+  },
+  {
+    id: 11,
+    name: 'Nail Art',
+    category: 'Uñas',
+    price: 35,
+    duration: 75,
+    description: 'Diseños artísticos personalizados en tus uñas',
+    active: true
+  },
+  {
+    id: 12,
+    name: 'Tratamiento Facial Básico',
+    category: 'Estética',
+    price: 40,
+    duration: 60,
+    description: 'Limpieza facial profunda con hidratación',
+    active: true
+  },
+  {
+    id: 13,
+    name: 'Tratamiento Facial Premium',
+    category: 'Estética',
+    price: 65,
+    duration: 90,
+    description: 'Tratamiento completo con mascarilla y masaje facial',
+    active: true
+  },
+  {
+    id: 14,
+    name: 'Depilación Cejas',
+    category: 'Estética',
+    price: 8,
+    duration: 15,
+    description: 'Diseño y depilación de cejas',
+    active: true
+  },
+  {
+    id: 15,
+    name: 'Depilación Completa',
+    category: 'Estética',
+    price: 50,
+    duration: 60,
+    description: 'Depilación de piernas completas, axilas y zona bikini',
+    active: true
+  },
+  {
+    id: 16,
+    name: 'Maquillaje Profesional',
+    category: 'Estética',
+    price: 45,
+    duration: 60,
+    description: 'Maquillaje profesional para eventos especiales',
+    active: true
+  }
+];
+
+let serviceIdCounter = 17;
+
+// Citas de ejemplo
+let appointments = [
+  {
+    id: 1,
+    slotId: '2025-12-23-10:00',
+    date: '2025-12-23',
+    time: '10:00',
+    clientName: 'María García López',
+    service: 'Corte y Tinte',
+    serviceId: 3,
+    notes: 'Prefiero tonos castaños claros',
+    status: 'confirmed', // confirmed, completed
+    serviciosRealizados: [],
+    totalPagado: 0,
+    createdAt: new Date('2025-12-20T09:30:00').toISOString()
+  },
+  {
+    id: 2,
+    slotId: '2025-12-24-11:00',
+    date: '2025-12-24',
+    time: '11:00',
+    clientName: 'Laura Martínez Ruiz',
+    service: 'Manicura y Diseño de Uñas',
+    serviceId: 8,
+    notes: 'Me gustaría un diseño navideño',
+    status: 'confirmed',
+    serviciosRealizados: [],
+    totalPagado: 0,
+    createdAt: new Date('2025-12-19T14:20:00').toISOString()
+  },
+  {
+    id: 3,
+    slotId: '2025-12-22-16:00',
+    date: '2025-12-22',
+    time: '16:00',
+    clientName: 'Carmen Fernández Silva',
+    service: 'Tratamiento Facial',
+    serviceId: 12,
+    notes: '',
+    status: 'completed',
+    serviciosRealizados: [12],
+    totalPagado: 40,
+    createdAt: new Date('2025-12-20T11:45:00').toISOString(),
+    completedAt: new Date('2025-12-21T17:00:00').toISOString()
+  }
+];
+
+// Marcar los slots ocupados por las citas de ejemplo
+slots.find(s => s.id === '2025-12-23-10:00').available = false;
+slots.find(s => s.id === '2025-12-24-11:00').available = false;
+slots.find(s => s.id === '2025-12-22-16:00').available = false;
+
+// Contador para IDs de citas
+let appointmentIdCounter = 4;
+
+// Funciones para gestionar slots
+export const getAvailableSlots = () => {
+  return slots.filter(slot => slot.available);
+};
+
+export const markSlotAsUnavailable = (slotId) => {
+  const slot = slots.find(s => s.id === slotId);
+  if (slot) {
+    slot.available = false;
+    return true;
+  }
+  return false;
+};
+
+export const markSlotAsAvailable = (slotId) => {
+  const slot = slots.find(s => s.id === slotId);
+  if (slot) {
+    slot.available = true;
+    return true;
+  }
+  return false;
+};
+// Funciones para gestionar citas
+export const createAppointment = (appointmentData) => {
+  const newAppointment = {
+    id: appointmentIdCounter++,
+    ...appointmentData,
+    status: 'confirmed',
+    serviciosRealizados: [],
+    totalPagado: 0,
+    createdAt: new Date().toISOString()
+  };
+  
+  appointments.push(newAppointment);
+  markSlotAsUnavailable(appointmentData.slotId);
+  
+  return newAppointment;
+};
+
+export const getAppointments = () => {
+  return appointments;
+};
+
+export const getAppointmentById = (id) => {
+  return appointments.find(apt => apt.id === parseInt(id));
+};
+  
+export const updateAppointmentStatus = (id, status) => {
+  const appointment = getAppointmentById(id);
+  if (appointment) {
+    appointment.status = status;
+    
+    // Si se completa, agregar fecha de finalización
+    if (status === 'completed') {
+      appointment.completedAt = new Date().toISOString();
+    }
+    
+    return appointment;
+  }
+  return null;
+};
+
+// Completar cita con servicios realizados
+export const completeAppointment = (id, serviciosRealizados) => {
+  const appointment = getAppointmentById(id);
+  if (appointment) {
+    appointment.status = 'completed';
+    appointment.serviciosRealizados = serviciosRealizados;
+    
+    // Calcular total
+    let total = 0;
+    serviciosRealizados.forEach(serviceId => {
+      const service = getServiceById(serviceId);
+      if (service) {
+        total += service.price;
+      }
+    });
+    appointment.totalPagado = total;
+    appointment.completedAt = new Date().toISOString();
+    
+    return appointment;
+  }
+  return null;
+};
+
+// Obtener citas completadas (facturación)
+export const getCompletedAppointments = () => {
+  return appointments.filter(apt => apt.status === 'completed');
+};
+
+// Obtener estadísticas de facturación
+export const getBillingStats = () => {
+  const completed = getCompletedAppointments();
+  const totalFacturado = completed.reduce((sum, apt) => sum + apt.totalPagado, 0);
+  return {
+    totalCitas: completed.length,
+    totalFacturado,
+    citasPorMes: completed.reduce((acc, apt) => {
+      const month = apt.completedAt.substring(0, 7);
+      if (!acc[month]) acc[month] = { count: 0, total: 0 };
+      acc[month].count++;
+      acc[month].total += apt.totalPagado;
+      return acc;
+    }, {})
+  };
+};
+
+// Funciones para gestionar servicios
+export const getServices = () => {
+  return services.filter(s => s.active);
+};
+
+export const getAllServices = () => {
+  return services;
+};
+
+export const getServiceById = (id) => {
+  return services.find(s => s.id === parseInt(id));
+};
+
+export const createService = (serviceData) => {
+  const newService = {
+    id: serviceIdCounter++,
+    ...serviceData,
+    active: true
+  };
+  services.push(newService);
+  return newService;
+};
+
+export const updateService = (id, serviceData) => {
+  const service = getServiceById(id);
+  if (service) {
+    Object.assign(service, serviceData);
+    return service;
+  }
+  return null;
+};
+
+export const deleteService = (id) => {
+  const index = services.findIndex(s => s.id === parseInt(id));
+  if (index !== -1) {
+    services[index].active = false;
+    return true;
+  }
+  return false;
+};
+

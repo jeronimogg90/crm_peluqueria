@@ -1,0 +1,128 @@
+.billing {
+  min-height: 100vh;
+  background: #f8f9fa;
+  padding: 2rem;
+}
+
+.billing-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.billing-container h1 {
+  font-size: 2.5rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.billing-subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.stat-card.money {
+  border-left-color: #28a745;
+}
+
+.stat-card.money .stat-number {
+  color: #28a745;
+}
+
+.billing-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.billing-table-container {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+}
+
+.billing-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.billing-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.billing-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+}
+
+.billing-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.billing-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.services-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.services-list li {
+  padding: 0.25rem 0;
+  color: #666;
+}
+
+.price-cell {
+  text-align: right;
+  color: #28a745;
+  font-size: 1.1rem;
+}
+
+.total-row {
+  background: #f8f9fa;
+  font-size: 1.2rem;
+}
+
+.total-row td {
+  border-bottom: none;
+  padding: 1.5rem 1rem;
+}
+
+.no-data {
+  text-align: center;
+  padding: 3rem;
+  color: #999;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .billing-table-container {
+    padding: 1rem;
+  }
+  
+  .billing-table {
+    font-size: 0.9rem;
+  }
+  
+  .billing-table th,
+  .billing-table td {
+    padding: 0.5rem;
+  }
+}
