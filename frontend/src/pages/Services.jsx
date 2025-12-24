@@ -158,89 +158,94 @@ function Services() {
         </div>
 
         {showForm && (
-          <div className="service-form-container">
-            <h2>{editingService ? 'Editar Servicio' : 'Nuevo Servicio'}</h2>
-            <form onSubmit={handleSubmit} className="service-form">
-              <div className="form-row">
+          <div className="modal-overlay" onClick={handleCancel}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>{editingService ? 'Editar Servicio' : 'Nuevo Servicio'}</h2>
+                <button className="modal-close" onClick={handleCancel}>✕ Cancelar</button>
+              </div>
+              <form onSubmit={handleSubmit} className="service-form">
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="name">Nombre del Servicio *</label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="category">Categoría *</label>
+                    <select
+                      id="category"
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      required
+                    >
+                      <option value="Peluquería">Peluquería</option>
+                      <option value="Uñas">Uñas</option>
+                      <option value="Estética">Estética</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="price">Precio (€) *</label>
+                    <input
+                      type="number"
+                      id="price"
+                      name="price"
+                      value={formData.price}
+                      onChange={handleInputChange}
+                      min="0"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="duration">Duración (minutos) *</label>
+                    <input
+                      type="number"
+                      id="duration"
+                      name="duration"
+                      value={formData.duration}
+                      onChange={handleInputChange}
+                      min="5"
+                      step="5"
+                      required
+                    />
+                  </div>
+                </div>
+
                 <div className="form-group">
-                  <label htmlFor="name">Nombre del Servicio *</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
+                  <label htmlFor="description">Descripción</label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={formData.description}
                     onChange={handleInputChange}
-                    required
+                    rows="3"
+                    placeholder="Describe el servicio..."
                   />
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="category">Categoría *</label>
-                  <select
-                    id="category"
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="Peluquería">Peluquería</option>
-                    <option value="Uñas">Uñas</option>
-                    <option value="Estética">Estética</option>
-                  </select>
+                <div className="form-actions">
+                  <button type="submit" className="btn-save" disabled={loading}>
+                    {loading ? 'Guardando...' : 'Guardar Servicio'}
+                  </button>
+                  <button type="button" className="btn-cancel" onClick={handleCancel}>
+                    Cancelar
+                  </button>
                 </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="price">Precio (€) *</label>
-                  <input
-                    type="number"
-                    id="price"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    min="0"
-                    step="0.01"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="duration">Duración (minutos) *</label>
-                  <input
-                    type="number"
-                    id="duration"
-                    name="duration"
-                    value={formData.duration}
-                    onChange={handleInputChange}
-                    min="5"
-                    step="5"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="description">Descripción</label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  rows="3"
-                  placeholder="Describe el servicio..."
-                />
-              </div>
-
-              <div className="form-actions">
-                <button type="submit" className="btn-save" disabled={loading}>
-                  {loading ? 'Guardando...' : 'Guardar Servicio'}
-                </button>
-                <button type="button" className="btn-cancel" onClick={handleCancel}>
-                  Cancelar
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         )}
 
