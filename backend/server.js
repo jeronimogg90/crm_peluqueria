@@ -73,21 +73,8 @@ app.get('/api/migrate-client-id', (req, res) => {
   }
 });
 
-// Servir archivos estáticos del frontend en producción
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'public')));
-  
-  // Cualquier otra ruta devuelve el index.html (para React Router)
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-  });
-}
-
 // Inicio del servidor
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
   console.log(`📋 API disponible en http://localhost:${PORT}/api`);
-  if (process.env.NODE_ENV === 'production') {
-    console.log(`🌐 Frontend servido desde /public`);
-  }
 });
