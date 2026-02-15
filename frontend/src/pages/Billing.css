@@ -83,6 +83,71 @@
   color: #666;
 }
 
+.btn-view-services {
+  background: transparent;
+  border: 2px solid #667eea;
+  color: #667eea;
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-view-services:hover {
+  background: rgba(102,126,234,0.08);
+}
+
+.date-cell .date-main {
+  font-weight: 600;
+}
+
+.time-under-date {
+  font-size: 0.95rem;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+/* Services modal */
+.services-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1200;
+  padding: 1rem;
+}
+
+.services-modal-content {
+  background: white;
+  border-radius: 14px;
+  padding: 1.25rem;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.services-modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.services-list-modal {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.services-list-modal li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
 .price-cell {
   text-align: right;
   color: #28a745;

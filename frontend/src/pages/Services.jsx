@@ -162,7 +162,7 @@ function Services() {
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h2>{editingService ? 'Editar Servicio' : 'Nuevo Servicio'}</h2>
-                <button className="modal-close" onClick={handleCancel}>✕ Cancelar</button>
+                <button className="modal-close" onClick={handleCancel} aria-label="Cerrar">✕</button>
               </div>
               <form onSubmit={handleSubmit} className="service-form">
                 <div className="form-row">

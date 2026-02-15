@@ -9,6 +9,8 @@ function Billing() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [filterMonth, setFilterMonth] = useState('all');
+  const [showServicesModal, setShowServicesModal] = useState(false);
+  const [modalServices, setModalServices] = useState([]);
 
   useEffect(() => {
     fetchBillingData();
@@ -120,31 +122,36 @@ function Billing() {
               <table className="billing-table">
                 <thead>
                   <tr>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                    <th>Cliente</th>
-                    <th>Servicios Realizados</th>
-                    <th>Total</th>
-                  </tr>
+                      <th>Fecha</th>
+                      <th>Cliente</th>
+                      <th>Servicios Realizados</th>
+                      <th>Total</th>
+                    </tr>
                 </thead>
                 <tbody>
                   {filteredAppointments.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="no-data">No hay citas completadas</td>
+                      <td colSpan="4" className="no-data">No hay citas completadas</td>
                     </tr>
                   ) : (
                     filteredAppointments.map(appointment => (
                       <tr key={appointment.id}>
-                        <td>{new Date(appointment.date + 'T00:00:00').toLocaleDateString('es-ES')}</td>
-                        <td>{appointment.time}</td>
+                        <td>
+                          <div className="date-cell">
+                            <div className="date-main">{new Date(appointment.date + 'T00:00:00').toLocaleDateString('es-ES')}</div>
+                            <div className="time-under-date">{appointment.time}</div>
+                          </div>
+                        </td>
                         <td><strong>{appointment.clientName}</strong></td>
                         <td>
-                          <ul className="services-list">
-                            {appointment.serviciosRealizados.map((serviceId, idx) => {
-                              const service = services.find(s => s.id === serviceId);
-                              return <li key={idx}>{service ? service.name : `Servicio ${serviceId}`}</li>;
-                            })}
-                          </ul>
+                          <button className="btn-view-services" onClick={() => {
+                            const names = appointment.serviciosRealizados.map(id => {
+                              const s = services.find(x => x.id === id);
+                              return s ? s.name : `Servicio ${id}`;
+                            });
+                            setModalServices(names);
+                            setShowServicesModal(true);
+                          }}>Ver servicios</button>
                         </td>
                         <td className="price-cell">
                           <strong>{appointment.totalPagado.toFixed(2)}€</strong>
@@ -155,7 +162,7 @@ function Billing() {
                 </tbody>
                 <tfoot>
                   <tr className="total-row">
-                    <td colSpan="4"><strong>TOTAL</strong></td>
+                    <td colSpan="3"><strong>TOTAL</strong></td>
                     <td className="price-cell">
                       <strong>{totalFiltered.toFixed(2)}€</strong>
                     </td>
@@ -163,6 +170,17 @@ function Billing() {
                 </tfoot>
               </table>
             </div>
+            {showServicesModal && (
+              <div className="services-modal" onClick={() => setShowServicesModal(false)}>
+                <div className="services-modal-content" onClick={e => e.stopPropagation()}>
+                  <button className="modal-close" onClick={() => setShowServicesModal(false)} aria-label="Cerrar">✕</button>
+                  <h3>Servicios realizados</h3>
+                  <ul className="services-list-modal">
+                    {modalServices.map((name, idx) => <li key={idx}>{name}</li>)}
+                  </ul>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
