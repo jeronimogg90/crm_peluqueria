@@ -9,9 +9,3 @@
   padding-top: env(safe-area-inset-top, 0px);
 }
 
-@media (max-width: 430px) {
-  /* add a tiny extra gap on small phones so sticky navbars don't collide with notch */
-  .App {
-    padding-top: calc(env(safe-area-inset-top, 0px) + 50px);
-  }
-}
