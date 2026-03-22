@@ -137,10 +137,27 @@ export const detectCalendarType = (calendarName) => {
   return 'casa';
 };
 
-// Determinar si un evento es de trabajo (basado SOLO en el tipo de calendario)
+// Determinar si un evento es de trabajo (basado en el calendario y en el título)
 export const isWorkEvent = (event, calendarType) => {
   // Si el evento está en el calendario de trabajo, es un evento de trabajo
-  return calendarType === 'trabajo';
+  if (calendarType === 'trabajo') {
+    return true;
+  }
+  
+  // Si no está en un calendario específico de trabajo, mirar el título del evento
+  const title = (event.summary || '').toLowerCase();
+  
+  // Buscar palabras clave en el título
+  if (title.includes('trabajo') || 
+      title.includes('peluqueria') || 
+      title.includes('peluquería') ||
+      title.includes('cita') || 
+      title.includes('corte') || 
+      title.includes('tinte')) {
+    return true;
+  }
+  
+  return false;
 };
 
 // Formatear evento de Google para nuestra BD
