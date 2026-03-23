@@ -71,8 +71,8 @@ export const syncCalendarEvents = async () => {
   }
 
   try {
-    // Obtener lista de calendarios
-    const calendarList = await calendar.calendarList.list();
+    // Obtener lista de calendarios, incluyendo ocultos
+    const calendarList = await calendar.calendarList.list({ showHidden: true });
     const calendars = calendarList.data.items || [];
     
     console.log('📅 Calendarios encontrados:', calendars.map(c => c.summary).join(', '));
@@ -85,7 +85,7 @@ export const syncCalendarEvents = async () => {
         const response = await calendar.events.list({
           calendarId: cal.id,
           timeMin: timeMin,
-          maxResults: 100,
+          maxResults: 2500,
           singleEvents: true,
           orderBy: 'startTime',
         });
@@ -98,7 +98,7 @@ export const syncCalendarEvents = async () => {
           event.calendarId = cal.id;
         });
         
-        console.log(`  📋 ${cal.summary}: ${events.length} eventos`);
+        console.log(`  📋 "${cal.summary}": descargados ${events.length} eventos`);
         allEvents.push(...events);
       } catch (error) {
         console.error(`❌ Error sincronizando calendario "${cal.summary}":`, error.message);
@@ -125,7 +125,7 @@ export const detectCalendarType = (calendarName) => {
   const name = calendarName.toLowerCase();
   
   // Detectar por nombre del calendario
-  if (name.includes('trabajo') || name.includes('work') || name.includes('peluquería') || name.includes('peluqueria')) {
+  if (name.includes('trabajo') || name.includes('work') || name.includes('peluquería') || name.includes('peluqueria') || name.includes('anavarromarc')) {
     return 'trabajo';
   }
   
@@ -139,13 +139,17 @@ export const detectCalendarType = (calendarName) => {
 
 // Determinar si un evento es de trabajo (basado en el calendario y en el título)
 export const isWorkEvent = (event, calendarType) => {
+  const title = (event.summary || '').toLowerCase();
+  
+  // Ignorar siempre cumpleaños y festivos, incluso si están en el calendario principal
+  if (title.includes('cumpleaños') || title.includes('festivo') || title.includes('holiday')) {
+    return false;
+  }
+
   // Si el evento está en el calendario de trabajo, es un evento de trabajo
   if (calendarType === 'trabajo') {
     return true;
   }
-  
-  // Si no está en un calendario específico de trabajo, mirar el título del evento
-  const title = (event.summary || '').toLowerCase();
   
   // Buscar palabras clave en el título
   if (title.includes('trabajo') || 
