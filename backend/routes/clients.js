@@ -9,10 +9,9 @@ import {
 
 const router = express.Router();
 
-// Obtener todos los clientes
-router.get('/clients', (req, res) => {
+router.get('/clients', async (req, res) => {
   try {
-    const clients = getAllClients();
+    const clients = await getAllClients();
     res.json(clients);
   } catch (error) {
     console.error('Error obteniendo clientes:', error);
@@ -20,16 +19,13 @@ router.get('/clients', (req, res) => {
   }
 });
 
-// Obtener un cliente por ID
-router.get('/clients/:id', (req, res) => {
+router.get('/clients/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const client = getClientById(id);
-    
+    const client = await getClientById(id);
     if (!client) {
       return res.status(404).json({ error: 'Cliente no encontrado' });
     }
-    
     res.json(client);
   } catch (error) {
     console.error('Error obteniendo cliente:', error);
@@ -37,11 +33,10 @@ router.get('/clients/:id', (req, res) => {
   }
 });
 
-// Obtener historial de un cliente
-router.get('/clients/:id/history', (req, res) => {
+router.get('/clients/:id/history', async (req, res) => {
   try {
     const { id } = req.params;
-    const history = getClientHistory(id);
+    const history = await getClientHistory(id);
     res.json(history);
   } catch (error) {
     console.error('Error obteniendo historial:', error);
@@ -49,49 +44,32 @@ router.get('/clients/:id/history', (req, res) => {
   }
 });
 
-// Crear nuevo cliente
-router.post('/clients', (req, res) => {
+router.post('/clients', async (req, res) => {
   try {
     const { nombre, apellidos, telefono, email } = req.body;
-    
-    // Validar datos requeridos
     if (!nombre || !apellidos) {
       return res.status(400).json({ error: 'Nombre y apellidos son requeridos' });
     }
-    
-    const client = createClient({ nombre, apellidos, telefono, email });
-    
-    res.status(201).json({
-      message: 'Cliente creado exitosamente',
-      client
-    });
+    const client = await createClient({ nombre, apellidos, telefono, email });
+    res.status(201).json({ message: 'Cliente creado exitosamente', client });
   } catch (error) {
     console.error('Error creando cliente:', error);
     res.status(500).json({ error: 'Error creando cliente' });
   }
 });
 
-// Actualizar cliente
-router.put('/clients/:id', (req, res) => {
+router.put('/clients/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { nombre, apellidos, telefono, email } = req.body;
-    
-    // Validar datos requeridos
     if (!nombre || !apellidos) {
       return res.status(400).json({ error: 'Nombre y apellidos son requeridos' });
     }
-    
-    const client = updateClient(id, { nombre, apellidos, telefono, email });
-    
+    const client = await updateClient(id, { nombre, apellidos, telefono, email });
     if (!client) {
       return res.status(404).json({ error: 'Cliente no encontrado' });
     }
-    
-    res.json({
-      message: 'Cliente actualizado exitosamente',
-      client
-    });
+    res.json({ message: 'Cliente actualizado exitosamente', client });
   } catch (error) {
     console.error('Error actualizando cliente:', error);
     res.status(500).json({ error: 'Error actualizando cliente' });

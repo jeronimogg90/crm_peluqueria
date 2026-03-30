@@ -1,26 +1,45 @@
-import db from '../database/database.js';
+import supabase from '../config/supabase.js';
 
 // ========================================
 // FUNCIONES PARA SLOTS
 // ========================================
 
-export const getAvailableSlots = () => {
-  return db.prepare('SELECT * FROM slots WHERE available = 1 ORDER BY date, time').all();
+export const getAvailableSlots = async () => {
+  const { data, error } = await supabase
+    .from('slots')
+    .select('*')
+    .eq('available', true)
+    .order('date')
+    .order('time');
+  if (error) throw error;
+  return data;
 };
 
-export const getSlotById = (slotId) => {
-  return db.prepare('SELECT * FROM slots WHERE id = ?').get(slotId);
+export const getSlotById = async (slotId) => {
+  const { data, error } = await supabase
+    .from('slots')
+    .select('*')
+    .eq('id', slotId)
+    .single();
+  if (error && error.code !== 'PGRST116') throw error;
+  return data;
 };
 
-export const bookSlot = (slotId) => {
-  const stmt = db.prepare('UPDATE slots SET available = 0 WHERE id = ?');
-  stmt.run(slotId);
+export const bookSlot = async (slotId) => {
+  const { error } = await supabase
+    .from('slots')
+    .update({ available: false })
+    .eq('id', slotId);
+  if (error) throw error;
   return getSlotById(slotId);
 };
 
-export const releaseSlot = (slotId) => {
-  const stmt = db.prepare('UPDATE slots SET available = 1 WHERE id = ?');
-  stmt.run(slotId);
+export const releaseSlot = async (slotId) => {
+  const { error } = await supabase
+    .from('slots')
+    .update({ available: true })
+    .eq('id', slotId);
+  if (error) throw error;
   return getSlotById(slotId);
 };
 
@@ -28,45 +47,69 @@ export const releaseSlot = (slotId) => {
 // FUNCIONES PARA SERVICIOS
 // ========================================
 
-export const getAllServices = () => {
-  return db.prepare('SELECT * FROM services ORDER BY category, name').all();
+export const getAllServices = async () => {
+  const { data, error } = await supabase
+    .from('services')
+    .select('*')
+    .order('category')
+    .order('name');
+  if (error) throw error;
+  return data;
 };
 
-export const getActiveServices = () => {
-  return db.prepare('SELECT * FROM services WHERE active = 1 ORDER BY category, name').all();
+export const getActiveServices = async () => {
+  const { data, error } = await supabase
+    .from('services')
+    .select('*')
+    .eq('active', true)
+    .order('category')
+    .order('name');
+  if (error) throw error;
+  return data;
 };
 
 // Alias para compatibilidad
 export const getServices = getActiveServices;
 
-export const getServiceById = (id) => {
-  return db.prepare('SELECT * FROM services WHERE id = ?').get(id);
+export const getServiceById = async (id) => {
+  const { data, error } = await supabase
+    .from('services')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (error && error.code !== 'PGRST116') throw error;
+  return data;
 };
 
-export const createService = (serviceData) => {
+export const createService = async (serviceData) => {
   const { name, category, price, duration, description } = serviceData;
-  const stmt = db.prepare(`
-    INSERT INTO services (name, category, price, duration, description, active)
-    VALUES (?, ?, ?, ?, ?, 1)
-  `);
-  const result = stmt.run(name, category, price, duration, description || '');
-  return getServiceById(result.lastInsertRowid);
+  const { data, error } = await supabase
+    .from('services')
+    .insert({ name, category, price, duration, description: description || '', active: true })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
 };
 
-export const updateService = (id, serviceData) => {
+export const updateService = async (id, serviceData) => {
   const { name, category, price, duration, description } = serviceData;
-  const stmt = db.prepare(`
-    UPDATE services 
-    SET name = ?, category = ?, price = ?, duration = ?, description = ?
-    WHERE id = ?
-  `);
-  stmt.run(name, category, price, duration, description || '', id);
-  return getServiceById(id);
+  const { data, error } = await supabase
+    .from('services')
+    .update({ name, category, price, duration, description: description || '' })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
 };
 
-export const deleteService = (id) => {
-  const stmt = db.prepare('UPDATE services SET active = 0 WHERE id = ?');
-  stmt.run(id);
+export const deleteService = async (id) => {
+  const { error } = await supabase
+    .from('services')
+    .update({ active: false })
+    .eq('id', id);
+  if (error) throw error;
   return { success: true };
 };
 
@@ -74,135 +117,130 @@ export const deleteService = (id) => {
 // FUNCIONES PARA CITAS
 // ========================================
 
-export const getAllAppointments = () => {
-  return db.prepare(`
-    SELECT * FROM appointments 
-    ORDER BY date DESC, time DESC
-  `).all();
+export const getAllAppointments = async () => {
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('*')
+    .order('date', { ascending: false })
+    .order('time', { ascending: false });
+  if (error) throw error;
+  return data;
 };
 
 // Alias para compatibilidad
 export const getAppointments = getAllAppointments;
 
-export const getAppointmentById = (id) => {
-  const appointment = db.prepare('SELECT * FROM appointments WHERE id = ?').get(id);
-  
-  if (appointment) {
-    // Obtener los servicios realizados
-    const services = db.prepare(`
-      SELECT service_id FROM appointment_services 
-      WHERE appointment_id = ?
-    `).all(id);
-    
-    appointment.serviciosRealizados = services.map(s => s.service_id);
-  }
-  
+export const getAppointmentById = async (id) => {
+  const { data: appointment, error } = await supabase
+    .from('appointments')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (error && error.code !== 'PGRST116') throw error;
+  if (!appointment) return null;
+
+  // Obtener los servicios realizados
+  const { data: services, error: svcError } = await supabase
+    .from('appointment_services')
+    .select('service_id')
+    .eq('appointment_id', id);
+  if (svcError) throw svcError;
+
+  appointment.serviciosRealizados = services.map(s => s.service_id);
   return appointment;
 };
 
-export const createAppointment = (appointmentData) => {
+export const createAppointment = async (appointmentData) => {
   const { slotId, date, time, clientName, clientId, service, serviceId, notes } = appointmentData;
-  
-  const stmt = db.prepare(`
-    INSERT INTO appointments (slot_id, date, time, client_name, client_id, service, service_id, notes, status, total_pagado)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', 0)
-  `);
-  
-  const result = stmt.run(slotId, date, time, clientName, clientId || null, service || '', serviceId, notes || '');
-  
-  return getAppointmentById(result.lastInsertRowid);
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .insert({
+      slot_id: slotId,
+      date,
+      time,
+      client_name: clientName,
+      client_id: clientId || null,
+      service: service || '',
+      service_id: serviceId,
+      notes: notes || '',
+      status: 'confirmed',
+      total_pagado: 0
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
 };
 
-export const completeAppointment = (id, serviciosRealizados, paymentData = {}, clientId = null) => {
+export const completeAppointment = async (id, serviciosRealizados, paymentData = {}, clientId = null) => {
   // Calcular el total
   let totalPagado = 0;
   if (serviciosRealizados && serviciosRealizados.length > 0) {
-    const placeholders = serviciosRealizados.map(() => '?').join(',');
-    const services = db.prepare(`
-      SELECT SUM(price) as total FROM services 
-      WHERE id IN (${placeholders})
-    `).get(...serviciosRealizados);
-    
-    totalPagado = services.total || 0;
+    const { data: services, error: svcError } = await supabase
+      .from('services')
+      .select('price')
+      .in('id', serviciosRealizados);
+    if (svcError) throw svcError;
+    totalPagado = services.reduce((sum, s) => sum + Number(s.price), 0);
   }
-  
-  // Verificar si existen las columnas de pago
-  const columns = db.prepare(`PRAGMA table_info(appointments)`).all();
-  const hasPaymentColumns = columns.some(col => col.name === 'payment_method');
-  
-  // Actualizar la cita con o sin datos de pago según disponibilidad de columnas
-  let updateStmt, params;
-  if (hasPaymentColumns) {
-    updateStmt = db.prepare(`
-      UPDATE appointments 
-      SET status = 'completed', 
-          total_pagado = ?,
-          completed_at = ?,
-          payment_method = ?,
-          cash_received = ?,
-          change_returned = ?,
-          client_id = COALESCE(?, client_id)
-      WHERE id = ?
-    `);
-    params = [
-      totalPagado, 
-      new Date().toISOString(), 
-      paymentData.paymentMethod || null,
-      paymentData.cashReceived || null,
-      paymentData.change || null,
-      clientId,
-      id
-    ];
-  } else {
-    updateStmt = db.prepare(`
-      UPDATE appointments 
-      SET status = 'completed', 
-          total_pagado = ?,
-          completed_at = ?,
-          client_id = COALESCE(?, client_id)
-      WHERE id = ?
-    `);
-    params = [totalPagado, new Date().toISOString(), clientId, id];
+
+  // Actualizar la cita
+  const updateData = {
+    status: 'completed',
+    total_pagado: totalPagado,
+    completed_at: new Date().toISOString(),
+    payment_method: paymentData.paymentMethod || null,
+    cash_received: paymentData.cashReceived || null,
+    change_returned: paymentData.change || null
+  };
+
+  if (clientId) {
+    updateData.client_id = clientId;
   }
-  
-  updateStmt.run(...params);
-  
+
+  const { error: updateError } = await supabase
+    .from('appointments')
+    .update(updateData)
+    .eq('id', id);
+  if (updateError) throw updateError;
+
   // Insertar los servicios realizados
   if (serviciosRealizados && serviciosRealizados.length > 0) {
-    const insertServiceStmt = db.prepare(`
-      INSERT INTO appointment_services (appointment_id, service_id)
-      VALUES (?, ?)
-    `);
-    
-    const insertMany = db.transaction((items) => {
-      for (const serviceId of items) {
-        insertServiceStmt.run(id, serviceId);
-      }
-    });
-    
-    insertMany(serviciosRealizados);
+    const rows = serviciosRealizados.map(serviceId => ({
+      appointment_id: Number(id),
+      service_id: serviceId
+    }));
+    const { error: insertError } = await supabase
+      .from('appointment_services')
+      .insert(rows);
+    if (insertError) throw insertError;
   }
-  
+
   return getAppointmentById(id);
 };
 
-export const updateAppointmentStatus = (id, status) => {
-  const stmt = db.prepare('UPDATE appointments SET status = ? WHERE id = ?');
-  stmt.run(status, id);
+export const updateAppointmentStatus = async (id, status) => {
+  const { error } = await supabase
+    .from('appointments')
+    .update({ status })
+    .eq('id', id);
+  if (error) throw error;
   return getAppointmentById(id);
 };
 
-export const deleteAppointment = (id) => {
-  const appointment = getAppointmentById(id);
-  
+export const deleteAppointment = async (id) => {
+  const appointment = await getAppointmentById(id);
+
   if (appointment) {
-    // Liberar el slot
-    releaseSlot(appointment.slot_id);
-    
-    // Eliminar la cita (cascade eliminará los servicios relacionados)
-    db.prepare('DELETE FROM appointments WHERE id = ?').run(id);
+    await releaseSlot(appointment.slot_id);
+    const { error } = await supabase
+      .from('appointments')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
   }
-  
+
   return { success: true };
 };
 
@@ -210,66 +248,85 @@ export const deleteAppointment = (id) => {
 // FUNCIONES PARA FACTURACIÓN
 // ========================================
 
-export const getCompletedAppointments = () => {
-  return db.prepare(`
-    SELECT * FROM appointments 
-    WHERE status = 'completed'
-    ORDER BY completed_at DESC
-  `).all().map(apt => {
-    // Obtener servicios realizados
-    const services = db.prepare(`
-      SELECT service_id FROM appointment_services 
-      WHERE appointment_id = ?
-    `).all(apt.id);
-    
+export const getCompletedAppointments = async () => {
+  const { data: appointments, error } = await supabase
+    .from('appointments')
+    .select('*')
+    .eq('status', 'completed')
+    .order('completed_at', { ascending: false });
+  if (error) throw error;
+
+  // Obtener servicios realizados para cada cita
+  for (const apt of appointments) {
+    const { data: services, error: svcError } = await supabase
+      .from('appointment_services')
+      .select('service_id')
+      .eq('appointment_id', apt.id);
+    if (svcError) throw svcError;
     apt.serviciosRealizados = services.map(s => s.service_id);
-    return apt;
-  });
+  }
+
+  return appointments;
 };
 
-export const getBillingStats = () => {
-  const stats = db.prepare(`
-    SELECT 
-      COUNT(*) as totalCitas,
-      COALESCE(SUM(total_pagado), 0) as totalFacturado,
-      COALESCE(AVG(total_pagado), 0) as promedioPorCita
-    FROM appointments 
-    WHERE status = 'completed'
-  `).get();
-  
-  return stats;
+export const getBillingStats = async () => {
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('total_pagado')
+    .eq('status', 'completed');
+  if (error) throw error;
+
+  const totalCitas = data.length;
+  const totalFacturado = data.reduce((sum, a) => sum + Number(a.total_pagado || 0), 0);
+  const promedioPorCita = totalCitas > 0 ? totalFacturado / totalCitas : 0;
+
+  return { totalCitas, totalFacturado, promedioPorCita };
 };
 
-// ==================== FUNCIONES DE CLIENTES ====================
+// ========================================
+// FUNCIONES DE CLIENTES
+// ========================================
 
-export const getAllClients = () => {
-  const clients = db.prepare(`
-    SELECT 
-      c.*,
-      COUNT(DISTINCT a.id) as total_citas,
-      COALESCE(SUM(a.total_pagado), 0) as total_gastado
-    FROM clients c
-    LEFT JOIN appointments a ON c.id = a.client_id
-    GROUP BY c.id
-    ORDER BY c.nombre, c.apellidos
-  `).all();
-  
-  return clients.map(client => ({
-    id: client.id,
-    nombre: client.nombre,
-    apellidos: client.apellidos,
-    telefono: client.telefono,
-    email: client.email,
-    createdAt: client.created_at,
-    totalCitas: client.total_citas,
-    totalGastado: client.total_gastado
-  }));
+export const getAllClients = async () => {
+  const { data: clients, error } = await supabase
+    .from('clients')
+    .select('*')
+    .order('nombre')
+    .order('apellidos');
+  if (error) throw error;
+
+  const result = [];
+  for (const client of clients) {
+    const { data: appointments, error: aptError } = await supabase
+      .from('appointments')
+      .select('id, total_pagado')
+      .eq('client_id', client.id);
+    if (aptError) throw aptError;
+
+    result.push({
+      id: client.id,
+      nombre: client.nombre,
+      apellidos: client.apellidos,
+      telefono: client.telefono,
+      email: client.email,
+      createdAt: client.created_at,
+      totalCitas: appointments.length,
+      totalGastado: appointments.reduce((sum, a) => sum + Number(a.total_pagado || 0), 0)
+    });
+  }
+
+  return result;
 };
 
-export const getClientById = (id) => {
-  const client = db.prepare('SELECT * FROM clients WHERE id = ?').get(id);
+export const getClientById = async (id) => {
+  const { data: client, error } = await supabase
+    .from('clients')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (error && error.code !== 'PGRST116') throw error;
   if (!client) return null;
-  
+
   return {
     id: client.id,
     nombre: client.nombre,
@@ -280,152 +337,205 @@ export const getClientById = (id) => {
   };
 };
 
-export const getClientHistory = (clientId) => {
-  const appointments = db.prepare(`
-    SELECT 
-      a.*,
-      GROUP_CONCAT(s.name, ', ') as servicios
-    FROM appointments a
-    LEFT JOIN appointment_services aps ON a.id = aps.appointment_id
-    LEFT JOIN services s ON aps.service_id = s.id
-    WHERE a.client_id = ? AND a.status = 'completed'
-    GROUP BY a.id
-    ORDER BY a.date DESC, a.time DESC
-  `).all(clientId);
-  
-  return appointments.map(apt => ({
-    id: apt.id,
-    date: apt.date,
-    time: apt.time,
-    servicios: apt.servicios,
-    totalPagado: apt.total_pagado,
-    paymentMethod: apt.payment_method,
-    completedAt: apt.completed_at,
-    notes: apt.notes
-  }));
+export const getClientHistory = async (clientId) => {
+  const { data: appointments, error } = await supabase
+    .from('appointments')
+    .select('*')
+    .eq('client_id', clientId)
+    .eq('status', 'completed')
+    .order('date', { ascending: false })
+    .order('time', { ascending: false });
+  if (error) throw error;
+
+  const result = [];
+  for (const apt of appointments) {
+    const { data: aptServices, error: svcError } = await supabase
+      .from('appointment_services')
+      .select('service_id')
+      .eq('appointment_id', apt.id);
+    if (svcError) throw svcError;
+
+    let servicios = null;
+    if (aptServices.length > 0) {
+      const serviceIds = aptServices.map(s => s.service_id);
+      const { data: serviceNames, error: nameError } = await supabase
+        .from('services')
+        .select('name')
+        .in('id', serviceIds);
+      if (nameError) throw nameError;
+      servicios = serviceNames.map(s => s.name).join(', ');
+    }
+
+    result.push({
+      id: apt.id,
+      date: apt.date,
+      time: apt.time,
+      servicios,
+      totalPagado: apt.total_pagado,
+      paymentMethod: apt.payment_method,
+      completedAt: apt.completed_at,
+      notes: apt.notes
+    });
+  }
+
+  return result;
 };
 
-export const createClient = (clientData) => {
+export const createClient = async (clientData) => {
   const { nombre, apellidos, telefono, email } = clientData;
-  
-  const stmt = db.prepare(`
-    INSERT INTO clients (nombre, apellidos, telefono, email)
-    VALUES (?, ?, ?, ?)
-  `);
-  
-  const result = stmt.run(nombre, apellidos, telefono || null, email || null);
-  return getClientById(result.lastInsertRowid);
+  const { data, error } = await supabase
+    .from('clients')
+    .insert({ nombre, apellidos, telefono: telefono || null, email: email || null })
+    .select()
+    .single();
+  if (error) throw error;
+  return {
+    id: data.id,
+    nombre: data.nombre,
+    apellidos: data.apellidos,
+    telefono: data.telefono,
+    email: data.email,
+    createdAt: data.created_at
+  };
 };
 
-export const updateClient = (id, clientData) => {
+export const updateClient = async (id, clientData) => {
   const { nombre, apellidos, telefono, email } = clientData;
-  
-  const stmt = db.prepare(`
-    UPDATE clients
-    SET nombre = ?, apellidos = ?, telefono = ?, email = ?
-    WHERE id = ?
-  `);
-  
-  stmt.run(nombre, apellidos, telefono || null, email || null, id);
-  return getClientById(id);
+  const { data, error } = await supabase
+    .from('clients')
+    .update({ nombre, apellidos, telefono: telefono || null, email: email || null })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return {
+    id: data.id,
+    nombre: data.nombre,
+    apellidos: data.apellidos,
+    telefono: data.telefono,
+    email: data.email,
+    createdAt: data.created_at
+  };
 };
 
 // ========================================
 // FUNCIONES PARA GOOGLE CALENDAR SYNC
 // ========================================
 
-export const getGoogleSyncConfig = () => {
-  return db.prepare('SELECT * FROM google_sync_config WHERE id = 1').get();
+export const getGoogleSyncConfig = async () => {
+  const { data, error } = await supabase
+    .from('google_sync_config')
+    .select('*')
+    .eq('id', 1)
+    .single();
+  if (error && error.code !== 'PGRST116') throw error;
+  return data;
 };
 
-export const saveGoogleSyncConfig = (config) => {
-  // Soportar ambos formatos: camelCase y snake_case
+export const saveGoogleSyncConfig = async (config) => {
   const lastSyncToken = config.lastSyncToken || config.last_sync_token;
   const lastSyncDate = config.lastSyncDate || config.last_sync_date;
   const accessToken = config.accessToken || config.access_token;
   const refreshToken = config.refreshToken || config.refresh_token;
   const tokenExpiry = config.tokenExpiry || config.token_expiry;
-  
-  const existing = getGoogleSyncConfig();
-  
+
+  const existing = await getGoogleSyncConfig();
+
   if (existing) {
-    const stmt = db.prepare(`
-      UPDATE google_sync_config
-      SET last_sync_token = COALESCE(?, last_sync_token), 
-          last_sync_date = COALESCE(?, last_sync_date), 
-          access_token = COALESCE(?, access_token), 
-          refresh_token = COALESCE(?, refresh_token), 
-          token_expiry = COALESCE(?, token_expiry)
-      WHERE id = 1
-    `);
-    stmt.run(lastSyncToken, lastSyncDate, accessToken, refreshToken, tokenExpiry);
+    const updateData = {};
+    if (lastSyncToken !== undefined) updateData.last_sync_token = lastSyncToken;
+    if (lastSyncDate !== undefined) updateData.last_sync_date = lastSyncDate;
+    if (accessToken !== undefined) updateData.access_token = accessToken;
+    if (refreshToken !== undefined) updateData.refresh_token = refreshToken;
+    if (tokenExpiry !== undefined) updateData.token_expiry = tokenExpiry;
+
+    const { error } = await supabase
+      .from('google_sync_config')
+      .update(updateData)
+      .eq('id', 1);
+    if (error) throw error;
   } else {
-    const stmt = db.prepare(`
-      INSERT INTO google_sync_config (id, last_sync_token, last_sync_date, access_token, refresh_token, token_expiry)
-      VALUES (1, ?, ?, ?, ?, ?)
-    `);
-    stmt.run(lastSyncToken || null, lastSyncDate || null, accessToken || null, refreshToken || null, tokenExpiry || null);
+    const { error } = await supabase
+      .from('google_sync_config')
+      .insert({
+        id: 1,
+        last_sync_token: lastSyncToken || null,
+        last_sync_date: lastSyncDate || null,
+        access_token: accessToken || null,
+        refresh_token: refreshToken || null,
+        token_expiry: tokenExpiry || null
+      });
+    if (error) throw error;
   }
-  
+
   return getGoogleSyncConfig();
 };
 
-export const saveGoogleEvent = (eventData) => {
+export const saveGoogleEvent = async (eventData) => {
   const { googleEventId, summary, description, startTime, endTime, date, location, attendees, calendarType, isWorkEvent } = eventData;
-  
-  // Intentar insertar o actualizar si ya existe
-  const stmt = db.prepare(`
-    INSERT INTO google_events (google_event_id, summary, description, start_time, end_time, date, location, attendees, calendar_type, is_work_event)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(google_event_id) 
-    DO UPDATE SET 
-      summary = excluded.summary,
-      description = excluded.description,
-      start_time = excluded.start_time,
-      end_time = excluded.end_time,
-      date = excluded.date,
-      location = excluded.location,
-      attendees = excluded.attendees,
-      calendar_type = excluded.calendar_type,
-      is_work_event = excluded.is_work_event
-  `);
-  
-  stmt.run(googleEventId, summary || null, description || null, startTime, endTime, date, location || null, attendees || null, calendarType || 'casa', isWorkEvent ? 1 : 0);
+
+  const { error } = await supabase
+    .from('google_events')
+    .upsert({
+      google_event_id: googleEventId,
+      summary: summary || null,
+      description: description || null,
+      start_time: startTime,
+      end_time: endTime,
+      date,
+      location: location || null,
+      attendees: attendees || null,
+      calendar_type: calendarType || 'casa',
+      is_work_event: isWorkEvent ? true : false
+    }, { onConflict: 'google_event_id' });
+  if (error) throw error;
 };
 
-export const getUnconvertedWorkEvents = () => {
-  return db.prepare(`
-    SELECT * FROM google_events 
-    WHERE is_work_event = 1 AND converted = 0
-    ORDER BY date, start_time
-  `).all();
+export const getUnconvertedWorkEvents = async () => {
+  const { data, error } = await supabase
+    .from('google_events')
+    .select('*')
+    .eq('is_work_event', true)
+    .eq('converted', false)
+    .order('date')
+    .order('start_time');
+  if (error) throw error;
+  return data;
 };
 
-export const getAllGoogleEvents = () => {
-  return db.prepare('SELECT * FROM google_events ORDER BY date, start_time').all();
+export const getAllGoogleEvents = async () => {
+  const { data, error } = await supabase
+    .from('google_events')
+    .select('*')
+    .order('date')
+    .order('start_time');
+  if (error) throw error;
+  return data;
 };
 
-export const getGoogleEventById = (id) => {
-  return db.prepare('SELECT * FROM google_events WHERE id = ?').get(id);
+export const getGoogleEventById = async (id) => {
+  const { data, error } = await supabase
+    .from('google_events')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (error && error.code !== 'PGRST116') throw error;
+  return data;
 };
 
-export const markEventAsConverted = (googleEventId, appointmentId) => {
-  const stmt = db.prepare(`
-    UPDATE google_events
-    SET converted = 1, converted_appointment_id = ?
-    WHERE id = ?
-  `);
-  stmt.run(appointmentId, googleEventId);
+export const markEventAsConverted = async (googleEventId, appointmentId) => {
+  const { error } = await supabase
+    .from('google_events')
+    .update({ converted: true, converted_appointment_id: appointmentId })
+    .eq('id', googleEventId);
+  if (error) throw error;
 };
 
-export const deleteGoogleEvent = (id) => {
-  const stmt = db.prepare('DELETE FROM google_events WHERE id = ?');
-  stmt.run(id);
+export const deleteGoogleEvent = async (id) => {
+  const { error } = await supabase
+    .from('google_events')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
   return { success: true };
 };
-
-// ========================================
-// FUNCIONES AUXILIARES
-// ========================================
-
-export const getDatabase = () => db;

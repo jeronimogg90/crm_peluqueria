@@ -5,7 +5,7 @@ import { getGoogleSyncConfig, saveGoogleSyncConfig } from '../data/db.js';
 const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 
 // Crear cliente OAuth2
-export const createOAuth2Client = () => {
+export const createOAuth2Client = async () => {
   const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
@@ -13,7 +13,7 @@ export const createOAuth2Client = () => {
   );
 
   // Cargar tokens si existen
-  const config = getGoogleSyncConfig();
+  const config = await getGoogleSyncConfig();
   if (config && config.access_token) {
     oauth2Client.setCredentials({
       access_token: config.access_token,
@@ -26,8 +26,8 @@ export const createOAuth2Client = () => {
 };
 
 // Generar URL de autenticación
-export const getAuthUrl = () => {
-  const oauth2Client = createOAuth2Client();
+export const getAuthUrl = async () => {
+  const oauth2Client = await createOAuth2Client();
   return oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES,
@@ -37,13 +37,13 @@ export const getAuthUrl = () => {
 
 // Obtener tokens desde código de autorización
 export const getTokensFromCode = async (code) => {
-  const oauth2Client = createOAuth2Client();
+  const oauth2Client = await createOAuth2Client();
   const { tokens } = await oauth2Client.getToken(code);
   
   oauth2Client.setCredentials(tokens);
   
   // Guardar tokens en BD
-  saveGoogleSyncConfig({
+  await saveGoogleSyncConfig({
     accessToken: tokens.access_token,
     refreshToken: tokens.refresh_token,
     tokenExpiry: tokens.expiry_date ? new Date(tokens.expiry_date).toISOString() : null,
@@ -55,10 +55,10 @@ export const getTokensFromCode = async (code) => {
 
 // Sincronizar eventos desde Google Calendar
 export const syncCalendarEvents = async () => {
-  const oauth2Client = createOAuth2Client();
+  const oauth2Client = await createOAuth2Client();
   const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
   
-  const config = getGoogleSyncConfig();
+  const config = await getGoogleSyncConfig();
   
   // Determinar fecha de inicio (última sync o hace 30 días)
   let timeMin;
@@ -106,7 +106,7 @@ export const syncCalendarEvents = async () => {
     }
     
     // Actualizar última fecha de sincronización
-    saveGoogleSyncConfig({
+    await saveGoogleSyncConfig({
       ...config,
       lastSyncDate: new Date().toISOString()
     });
