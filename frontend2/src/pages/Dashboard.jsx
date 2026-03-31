@@ -35,8 +35,8 @@ function MessageBanner({ message, onClose }) {
   if (!message.text) return null;
   const colors = {
     success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
-    error:   'bg-red-50 border-red-200 text-red-800',
-    info:    'bg-blue-50 border-blue-200 text-blue-800',
+    error: 'bg-red-50 border-red-200 text-red-800',
+    info: 'bg-blue-50 border-blue-200 text-blue-800',
   };
   return (
     <div className={`flex items-center justify-between gap-3 border rounded-xl px-4 py-3 text-sm ${colors[message.type] || colors.info}`}>
@@ -51,9 +51,8 @@ function ApptChip({ apt, onClick }) {
   const s = STATUS[apt.status] || STATUS.confirmed;
   return (
     <div
-      className={`text-xs px-1.5 py-0.5 rounded cursor-pointer truncate ${
-        apt.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-      }`}
+      className={`text-xs px-1.5 py-0.5 rounded cursor-pointer truncate ${apt.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+        }`}
       onClick={e => { e.stopPropagation(); onClick(apt); }}
       title={`${apt.time} — ${apt.clientName}`}
     >
@@ -410,45 +409,44 @@ function Dashboard() {
   // RENDER
   // ═══════════════════════════════════════════════════════════════════════════
   return (
-    <div className="p-4 md:p-6 space-y-5 min-h-screen bg-[#fdf9f7]">
+    <div className="p-3 md:p-6 space-y-3 md:space-y-5 min-h-screen bg-[#fdf9f7]">
       {/* Page title */}
       <div>
-        <h1 className="font-display text-2xl font-bold text-stone-800">Panel de Administración</h1>
-        <p className="text-sm text-stone-400 mt-0.5">Gestiona las solicitudes de citas</p>
+        <h1 className="font-display text-xl md:text-2xl font-bold text-stone-800">Panel de Administración</h1>
+        <p className="text-xs md:text-sm text-stone-400 mt-0.5">Gestiona las solicitudes de citas</p>
       </div>
 
       {/* Message */}
       <MessageBanner message={message} onClose={() => setMessage({ type: '', text: '' })} />
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Stats — fila compacta */}
+      <div className="flex gap-2">
         {[
           { label: 'Total', value: stats.total, color: 'text-stone-700', bg: 'bg-white' },
           { label: 'Confirmadas', value: stats.confirmed, color: 'text-amber-700', bg: 'bg-amber-50' },
           { label: 'Completadas', value: stats.completed, color: 'text-emerald-700', bg: 'bg-emerald-50' },
         ].map(stat => (
-          <div key={stat.label} className={`${stat.bg} rounded-2xl shadow-sm border border-stone-100 p-4 text-center`}>
-            <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-            <div className="text-xs text-stone-400 mt-0.5">{stat.label}</div>
+          <div key={stat.label} className={`${stat.bg} flex-1 rounded-xl border border-stone-100 px-2 py-2 flex items-center gap-2`}>
+            <span className={`text-xl font-bold ${stat.color}`}>{stat.value}</span>
+            <span className="text-xs text-stone-400 leading-tight">{stat.label}</span>
           </div>
         ))}
       </div>
 
       {/* Controls */}
-      <div className="flex flex-wrap gap-2 items-center justify-between">
-        {/* View toggle */}
-        <div className="flex gap-1 bg-white border border-stone-200 rounded-xl p-1">
+      <div className="flex flex-col gap-2">
+        {/* View toggle + Google Cal */}
+        <div className="flex gap-1 bg-white border border-stone-200 rounded-xl p-1 w-full">
           {[
             { mode: 'monthly', icon: <CalendarDays size={14} />, label: 'Mes' },
-            { mode: 'weekly',  icon: <CalendarRange size={14} />, label: 'Semana' },
-            { mode: 'list',    icon: <List size={14} />,           label: 'Lista' },
+            { mode: 'weekly', icon: <CalendarRange size={14} />, label: 'Semana' },
+            { mode: 'list', icon: <List size={14} />, label: 'Lista' },
           ].map(v => (
             <button
               key={v.mode}
               onClick={() => setViewMode(v.mode)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                viewMode === v.mode ? 'bg-rose-400 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'
-              }`}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${viewMode === v.mode ? 'bg-rose-400 text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'
+                }`}
             >
               {v.icon} {v.label}
             </button>
@@ -456,15 +454,15 @@ function Dashboard() {
           <button
             onClick={handleGoogleSync}
             disabled={syncing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-stone-500 hover:text-stone-700 disabled:opacity-50"
+            className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-stone-500 hover:text-stone-700 disabled:opacity-50"
           >
-            <RefreshCw size={14} className={syncing ? 'animate-spin' : ''} />
-            {syncing ? 'Sincronizando...' : 'Google Cal'}
+            <RefreshCw size={13} className={syncing ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">{syncing ? 'Sincronizando...' : 'Google Cal'}</span>
           </button>
         </div>
 
         {/* Filters */}
-        <div className="flex gap-1 bg-white border border-stone-200 rounded-xl p-1">
+        <div className="flex gap-1 bg-white border border-stone-200 rounded-xl p-1 w-full">
           {[
             { value: 'all', label: 'Todas' },
             { value: 'confirmed', label: 'Confirmadas' },
@@ -473,9 +471,8 @@ function Dashboard() {
             <button
               key={f.value}
               onClick={() => setFilter(f.value)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                filter === f.value ? 'bg-stone-700 text-white' : 'text-stone-500 hover:text-stone-700'
-              }`}
+              className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${filter === f.value ? 'bg-stone-700 text-white' : 'text-stone-500 hover:text-stone-700'
+                }`}
             >
               {f.label}
             </button>
@@ -739,7 +736,7 @@ function Dashboard() {
       {/* ═══ FAB — Add appointment ══════════════════════════════════════════════ */}
       <button
         onClick={() => { setSelectedDate(null); setShowAddModal(true); }}
-        className="fixed bottom-6 right-6 w-12 h-12 bg-rose-400 hover:bg-rose-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+        className="fixed bottom-19 md:bottom-6 right-6 w-12 h-12 bg-rose-400 hover:bg-rose-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95"
         title="Nueva cita"
       >
         <Plus size={20} />

@@ -47,8 +47,8 @@ export default function Billing() {
   const formatMonth = (m) => { const [y, mo] = m.split('-'); return new Date(y, mo - 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }); };
 
   return (
-    <div className="p-6">
-        <div className="mb-8">
+    <div className="p-4 md:p-6 max-w-full overflow-x-hidden">
+        <div className="mb-6">
           <h1 className="text-3xl font-display font-bold text-stone-800">Facturación</h1>
           <p className="text-stone-500 mt-1">Historial de citas completadas e ingresos</p>
         </div>
@@ -59,11 +59,11 @@ export default function Billing() {
           </div>
         ) : (
           <>
-            {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+            {/* Stats — always 3 columns */}
+            <div className="grid grid-cols-3 gap-2 md:gap-5 mb-6">
               <StatCard icon={CalendarCheck} label="Total citas" value={stats?.totalCitas ?? 0} color="text-rose-500 bg-rose-50" />
               <StatCard icon={BadgeEuro} label="Total facturado" value={`${(stats?.totalFacturado ?? 0).toFixed(2)}€`} color="text-emerald-600 bg-emerald-50" />
-              <StatCard icon={BarChart3} label="Promedio por cita" value={`${(stats?.promedioPorCita ?? 0).toFixed(2)}€`} color="text-amber-600 bg-amber-50" />
+              <StatCard icon={BarChart3} label="Promedio" value={`${(stats?.promedioPorCita ?? 0).toFixed(2)}€`} color="text-amber-600 bg-amber-50" />
             </div>
 
             {/* Filter */}
@@ -82,7 +82,7 @@ export default function Billing() {
               {filterMonth !== 'all' && (
                 <div className="flex items-center gap-2 text-sm text-stone-500">
                   <TrendingUp className="w-4 h-4 text-emerald-500" />
-                  <span>Total mes: <strong className="text-stone-800">{filteredTotal.toFixed(2)}€</strong></span>
+                  <span>Total: <strong className="text-stone-800">{filteredTotal.toFixed(2)}€</strong></span>
                 </div>
               )}
             </div>
@@ -93,11 +93,11 @@ export default function Billing() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-stone-100">
-                      <th className="text-left px-5 py-3 text-xs font-semibold text-stone-400 uppercase tracking-wider">Clienta</th>
-                      <th className="text-left px-5 py-3 text-xs font-semibold text-stone-400 uppercase tracking-wider">Servicio</th>
-                      <th className="text-left px-5 py-3 text-xs font-semibold text-stone-400 uppercase tracking-wider">Fecha</th>
-                      <th className="text-left px-5 py-3 text-xs font-semibold text-stone-400 uppercase tracking-wider">Pago</th>
-                      <th className="text-right px-5 py-3 text-xs font-semibold text-stone-400 uppercase tracking-wider">Importe</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-stone-400 uppercase tracking-wider">Clienta</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-stone-400 uppercase tracking-wider">Servicio</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-stone-400 uppercase tracking-wider">Fecha</th>
+                      <th className="hidden md:table-cell text-left px-4 py-3 text-xs font-semibold text-stone-400 uppercase tracking-wider">Pago</th>
+                      <th className="hidden md:table-cell text-right px-4 py-3 text-xs font-semibold text-stone-400 uppercase tracking-wider">Importe</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -110,20 +110,20 @@ export default function Billing() {
                     ) : (
                       filtered.map(a => (
                         <tr key={a.id} className="border-b border-stone-50 hover:bg-stone-50/50 transition-colors">
-                          <td className="px-5 py-3.5 font-medium text-stone-800">{a.clientName}</td>
-                          <td className="px-5 py-3.5 text-stone-500">{a.service || '—'}</td>
-                          <td className="px-5 py-3.5 text-stone-500">
+                          <td className="px-4 py-3.5 font-medium text-stone-800">{a.clientName}</td>
+                          <td className="px-4 py-3.5 text-stone-500">{a.service || '—'}</td>
+                          <td className="px-4 py-3.5 text-stone-500 whitespace-nowrap">
                             <div className="flex items-center gap-1.5">
-                              <Clock className="w-3.5 h-3.5 text-stone-300" />
+                              <Clock className="w-3.5 h-3.5 text-stone-300 shrink-0" />
                               {formatDate(a.completedAt)}
                             </div>
                           </td>
-                          <td className="px-5 py-3.5">
+                          <td className="hidden md:table-cell px-4 py-3.5">
                             <Badge variant="secondary" className="text-xs">
                               {paymentLabels[a.paymentMethod] || a.paymentMethod || '—'}
                             </Badge>
                           </td>
-                          <td className="px-5 py-3.5 text-right font-semibold text-emerald-600">
+                          <td className="hidden md:table-cell px-4 py-3.5 text-right font-semibold text-emerald-600">
                             {(a.totalPagado || 0).toFixed(2)}€
                           </td>
                         </tr>
@@ -133,8 +133,9 @@ export default function Billing() {
                   {filtered.length > 0 && (
                     <tfoot>
                       <tr className="bg-stone-50">
-                        <td colSpan={4} className="px-5 py-3 text-sm font-semibold text-stone-600">Total</td>
-                        <td className="px-5 py-3 text-right font-bold text-stone-800">{filteredTotal.toFixed(2)}€</td>
+                        <td colSpan={3} className="px-4 py-3 text-sm font-semibold text-stone-600 md:hidden">Total</td>
+                        <td colSpan={4} className="hidden md:table-cell px-4 py-3 text-sm font-semibold text-stone-600">Total</td>
+                        <td className="hidden md:table-cell px-4 py-3 text-right font-bold text-stone-800">{filteredTotal.toFixed(2)}€</td>
                       </tr>
                     </tfoot>
                   )}
@@ -150,13 +151,13 @@ export default function Billing() {
 function StatCard({ icon: Icon, label, value, color }) {
   return (
     <Card className="border-stone-100">
-      <CardContent className="p-5 flex items-center gap-4">
-        <div className={`w-11 h-11 rounded-xl ${color} flex items-center justify-center flex-shrink-0`}>
-          <Icon className="w-5 h-5" />
+      <CardContent className="p-3 md:p-5 flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-4">
+        <div className={`w-8 h-8 md:w-11 md:h-11 rounded-xl ${color} flex items-center justify-center flex-shrink-0`}>
+          <Icon className="w-4 h-4 md:w-5 md:h-5" />
         </div>
-        <div>
-          <p className="text-xs text-stone-400 font-medium">{label}</p>
-          <p className="text-2xl font-bold text-stone-800 leading-tight">{value}</p>
+        <div className="text-center md:text-left min-w-0">
+          <p className="text-[10px] md:text-xs text-stone-400 font-medium leading-tight">{label}</p>
+          <p className="text-base md:text-2xl font-bold text-stone-800 leading-tight truncate">{value}</p>
         </div>
       </CardContent>
     </Card>

@@ -13,7 +13,7 @@ export default function AdminLayout({ children }) {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-stone-50 flex">
+    <div className="h-screen bg-stone-50 flex overflow-hidden">
 
       {/* ── Sidebar — solo desktop ───────────────────────────────────── */}
       <aside className="hidden md:flex w-60 bg-white border-r border-stone-100 flex-col fixed inset-y-0 left-0 z-40 shadow-sm">
@@ -66,7 +66,7 @@ export default function AdminLayout({ children }) {
       </aside>
 
       {/* ── Main content ─────────────────────────────────────────────── */}
-      <main className="flex-1 md:ml-60 min-h-screen pb-20 md:pb-0">
+      <main className="flex-1 md:ml-60 overflow-y-auto pb-20 md:pb-0">
         {children}
       </main>
 
