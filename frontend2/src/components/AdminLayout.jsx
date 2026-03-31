@@ -14,8 +14,9 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-stone-50 flex">
-      {/* Sidebar */}
-      <aside className="w-60 bg-white border-r border-stone-100 flex flex-col fixed inset-y-0 left-0 z-40 shadow-sm">
+
+      {/* ── Sidebar — solo desktop ───────────────────────────────────── */}
+      <aside className="hidden md:flex w-60 bg-white border-r border-stone-100 flex-col fixed inset-y-0 left-0 z-40 shadow-sm">
         {/* Logo */}
         <div className="h-16 flex items-center px-5 border-b border-stone-100">
           <div className="flex items-center gap-2.5">
@@ -64,10 +65,32 @@ export default function AdminLayout({ children }) {
         </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 ml-60 min-h-screen">
+      {/* ── Main content ─────────────────────────────────────────────── */}
+      <main className="flex-1 md:ml-60 min-h-screen pb-20 md:pb-0">
         {children}
       </main>
+
+      {/* ── Bottom tab bar — solo móvil ──────────────────────────────── */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-stone-100 flex">
+        {navItems.map(item => {
+          const active = location.pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={cn(
+                "flex-1 flex flex-col items-center justify-center py-2.5 gap-1 text-[10px] font-medium transition-colors",
+                active ? "text-rose-500" : "text-stone-400"
+              )}
+            >
+              <item.icon className={cn("w-5 h-5", active ? "text-rose-500" : "text-stone-400")} />
+              {item.label}
+              {active && <div className="w-1 h-1 rounded-full bg-rose-400" />}
+            </Link>
+          );
+        })}
+      </nav>
+
     </div>
   );
 }
