@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Services from './pages/Services';
 import Billing from './pages/Billing';
 import Clients from './pages/Clients';
+import Expenses from './pages/Expenses';
 import './index.css';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
         <Route path="/admin/servicios" element={<AdminLayout><Services /></AdminLayout>} />
         <Route path="/admin/facturacion" element={<AdminLayout><Billing /></AdminLayout>} />
         <Route path="/admin/clientes" element={<AdminLayout><Clients /></AdminLayout>} />
+        <Route path="/admin/gastos" element={<AdminLayout><Expenses /></AdminLayout>} />
       </Routes>
     </Router>
   );

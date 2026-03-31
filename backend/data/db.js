@@ -539,3 +539,81 @@ export const deleteGoogleEvent = async (id) => {
   if (error) throw error;
   return { success: true };
 };
+
+// ========================================
+// FUNCIONES PARA GASTOS
+// ========================================
+
+export const getExpenses = async ({ month } = {}) => {
+  let query = supabase
+    .from('expenses')
+    .select('*')
+    .order('date', { ascending: false });
+
+  if (month) {
+    // month = 'YYYY-MM'
+    const from = `${month}-01`;
+    const [y, m] = month.split('-').map(Number);
+    const lastDay = new Date(y, m, 0).getDate();
+    const to = `${month}-${String(lastDay).padStart(2, '0')}`;
+    query = query.gte('date', from).lte('date', to);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data;
+};
+
+export const getExpensesStats = async () => {
+  const { data, error } = await supabase
+    .from('expenses')
+    .select('amount, category, date');
+  if (error) throw error;
+
+  const totalGastado = data.reduce((s, e) => s + parseFloat(e.amount), 0);
+
+  // Totales por categoría
+  const byCategory = data.reduce((acc, e) => {
+    acc[e.category] = (acc[e.category] || 0) + parseFloat(e.amount);
+    return acc;
+  }, {});
+
+  // Totales por mes (YYYY-MM)
+  const byMonth = data.reduce((acc, e) => {
+    const month = e.date.substring(0, 7);
+    acc[month] = (acc[month] || 0) + parseFloat(e.amount);
+    return acc;
+  }, {});
+
+  return { totalGastado, byCategory, byMonth };
+};
+
+export const createExpense = async ({ date, concept, amount, category }) => {
+  const { data, error } = await supabase
+    .from('expenses')
+    .insert({ date, concept, amount, category })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+export const updateExpense = async (id, { date, concept, amount, category }) => {
+  const { data, error } = await supabase
+    .from('expenses')
+    .update({ date, concept, amount, category })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error && error.code !== 'PGRST116') throw error;
+  return data;
+};
+
+export const deleteExpense = async (id) => {
+  const { error } = await supabase
+    .from('expenses')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+  return { success: true };
+};

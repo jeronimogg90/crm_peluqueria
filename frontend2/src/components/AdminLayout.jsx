@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { CalendarDays, Scissors, CreditCard, Users, LayoutDashboard, ExternalLink } from 'lucide-react';
+import { CalendarDays, Scissors, CreditCard, Users, LayoutDashboard, ExternalLink, Receipt } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 const navItems = [
@@ -7,6 +7,7 @@ const navItems = [
   { href: '/admin/servicios',    icon: Scissors,     label: 'Servicios' },
   { href: '/admin/facturacion',  icon: CreditCard,   label: 'Facturación' },
   { href: '/admin/clientes',     icon: Users,        label: 'Clientes' },
+  { href: '/admin/gastos',       icon: Receipt,      label: 'Gastos' },
 ];
 
 export default function AdminLayout({ children }) {

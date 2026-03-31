@@ -7,6 +7,7 @@ import appointmentsRouter from './routes/appointments.js';
 import servicesRouter from './routes/services.js';
 import clientsRouter from './routes/clients.js';
 import googleCalendarRouter from './routes/googleCalendar.js';
+import expensesRouter from './routes/expenses.js';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use('/api', appointmentsRouter);
 app.use('/api', servicesRouter);
 app.use('/api', clientsRouter);
 app.use('/api', googleCalendarRouter);
+app.use('/api', expensesRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
