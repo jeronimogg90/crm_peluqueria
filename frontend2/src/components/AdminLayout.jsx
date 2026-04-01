@@ -3,11 +3,11 @@ import { CalendarDays, Scissors, CreditCard, Users, LayoutDashboard, ExternalLin
 import { cn } from '../lib/utils';
 
 const navItems = [
-  { href: '/admin',              icon: CalendarDays, label: 'Citas' },
-  { href: '/admin/servicios',    icon: Scissors,     label: 'Servicios' },
-  { href: '/admin/facturacion',  icon: CreditCard,   label: 'Facturación' },
-  { href: '/admin/clientes',     icon: Users,        label: 'Clientes' },
-  { href: '/admin/gastos',       icon: Receipt,      label: 'Gastos' },
+  { href: '/admin', icon: CalendarDays, label: 'Citas' },
+  { href: '/admin/servicios', icon: Scissors, label: 'Servicios' },
+  { href: '/admin/facturacion', icon: CreditCard, label: 'Facturación' },
+  { href: '/admin/clientes', icon: Users, label: 'Clientes' },
+  { href: '/admin/gastos', icon: Receipt, label: 'Gastos' },
 ];
 
 export default function AdminLayout({ children }) {
@@ -25,7 +25,7 @@ export default function AdminLayout({ children }) {
               <LayoutDashboard className="w-4 h-4 text-white" />
             </div>
             <div>
-              <p className="font-display font-semibold text-stone-800 text-sm leading-tight">Ana Varela</p>
+              <p className="font-display font-semibold text-stone-800 text-sm leading-tight">Ana Navarro</p>
               <p className="text-xs text-stone-400">Panel de gestión</p>
             </div>
           </div>

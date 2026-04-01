@@ -85,7 +85,7 @@ export default function Home() {
                   <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm mx-auto flex items-center justify-center">
                     <Scissors className="w-12 h-12 text-white" />
                   </div>
-                  <p className="font-display text-2xl font-semibold">Ana Varela</p>
+                  <p className="font-display text-2xl font-semibold">Ana Navarro</p>
                   <p className="text-white/80 text-sm">Peluquería & Estética</p>
                   <div className="flex justify-center gap-1">
                     {[...Array(5)].map((_, i) => (
@@ -220,7 +220,7 @@ export default function Home() {
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center">
                 <Scissors className="w-3.5 h-3.5 text-white" />
               </div>
-              <span className="font-display text-white font-semibold">Ana Varela</span>
+              <span className="font-display text-white font-semibold">Ana Navarro</span>
             </div>
             <p className="text-sm leading-relaxed">
               Peluquería y centro de estética con más de 10 años de experiencia.
@@ -253,7 +253,7 @@ export default function Home() {
           </div>
         </div>
         <div className="border-t border-stone-800 mt-10 pt-6 text-center text-xs text-stone-600">
-          © 2025 Ana Varela Peluquería · Todos los derechos reservados
+          © 2025 Ana Navarro · Todos los derechos reservados
         </div>
       </footer>
     </div>
